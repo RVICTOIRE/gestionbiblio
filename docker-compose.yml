@@ -1,0 +1,214 @@
+version: "3.9"
+
+# ============================================================
+#  Bibliothèque Numérique DIT — Docker Compose
+#  Profil dev  : docker compose --profile dev up
+#  Profil prod : docker compose --profile prod up
+# ============================================================
+
+networks:
+  bibliotheque-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  model-data:
+  training-data:
+
+services:
+
+  # ─── Base de données ────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: bibliotheque-db
+    environment:
+      POSTGRES_DB: bibliotheque
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - bibliotheque-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bibliotheque"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─── Service Livres ─────────────────────────────────────────
+  livres:
+    container_name: bibliotheque-livres
+    build:
+      context: ./services/livres
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bibliotheque
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "5001:5001"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - dev
+      - prod
+
+  # ─── Service Livres (dev avec hot-reload) ─────────────────
+  livres-dev:
+    container_name: bibliotheque-livres-dev
+    image: python:3.11-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install -r requirements.txt -q &&
+             flask run --host=0.0.0.0 --port=5001 --reload"
+    volumes:
+      - ./services/livres:/app
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bibliotheque
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "5001:5001"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - hotreload
+
+  # ─── Service Utilisateurs ───────────────────────────────────
+  utilisateurs:
+    container_name: bibliotheque-utilisateurs
+    build:
+      context: ./services/utilisateurs
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bibliotheque
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      LOANS_SERVICE_URL: http://emprunts:5003
+    ports:
+      - "5002:5002"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - dev
+      - prod
+
+  # ─── Service Emprunts ───────────────────────────────────────
+  emprunts:
+    container_name: bibliotheque-emprunts
+    build:
+      context: ./services/emprunts
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bibliotheque
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      BOOKS_SERVICE_URL: http://livres:5001
+    volumes:
+      - training-data:/app/data
+    ports:
+      - "5003:5003"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      db:
+        condition: service_healthy
+      livres:
+        condition: service_started
+    restart: unless-stopped
+    profiles:
+      - dev
+      - prod
+
+  # ─── Service Recommandation ─────────────────────────────────
+  recommandation:
+    container_name: bibliotheque-recommandation
+    build:
+      context: ./services/recommandation
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bibliotheque
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      MODEL_PATH: /app/model/model.pkl
+      DATA_PATH: /app/data/loans.csv
+    volumes:
+      - model-data:/app/model
+      - training-data:/app/data
+    ports:
+      - "8000:8000"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - dev
+      - prod
+
+  # ─── Frontend ───────────────────────────────────────────────
+  frontend:
+    container_name: bibliotheque-frontend
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      - livres
+      - utilisateurs
+      - emprunts
+      - recommandation
+    restart: unless-stopped
+    profiles:
+      - prod
+
+  # ─── Frontend dev (hot-reload via volume) ──────────────────
+  frontend-dev:
+    container_name: bibliotheque-frontend-dev
+    image: nginx:1.25-alpine
+    volumes:
+      - ./services/frontend/index.html:/usr/share/nginx/html/index.html
+      - ./services/frontend/static:/usr/share/nginx/html/static
+      - ./services/frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    networks:
+      - bibliotheque-net
+    depends_on:
+      - livres
+      - utilisateurs
+      - emprunts
+      - recommandation
+    profiles:
+      - dev
