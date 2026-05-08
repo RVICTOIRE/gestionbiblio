@@ -1,0 +1,15 @@
+{
+  "rmse": 0.2341,
+  "mae": 0.1876,
+  "coverage": 1.0,
+  "n_test_samples": 5,
+  "n_users": 10,
+  "n_books": 9,
+  "evaluation_method": "knn_collaborative",
+  "model_stats": {
+    "n_users": 10,
+    "n_books": 9,
+    "n_interactions": 25,
+    "density": 0.2778
+  }
+}
