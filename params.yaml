@@ -1,5 +1,5 @@
 train:
-  n_neighbors: 5
+  n_neighbors: 10
   metric: cosine
 
 preprocess:
