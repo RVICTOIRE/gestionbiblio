@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapport — Bibliothèque Numérique DIT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --primary: #1e3a5f;
+    --accent:  #2563eb;
+    --gold:    #d4a017;
+    --light:   #f0f4f8;
+    --border:  #d1d9e0;
+    --text:    #1a202c;
+    --muted:   #4a5568;
+    --code-bg: #1e293b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background: white;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  /* ── PAGE DE GARDE ── */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, var(--primary) 0%, #0f2444 100%);
+    color: white;
+    text-align: center;
+    padding: 3rem;
+    page-break-after: always;
+  }
+  .cover .logo-box {
+    width: 90px; height: 90px;
+    background: white;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  }
+  .cover h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; }
+  .cover h2 { font-size: 1.2rem; font-weight: 400; opacity: .85; margin-bottom: 2.5rem; }
+  .cover .meta-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; max-width: 520px; width: 100%; margin-top: 1.5rem;
+  }
+  .cover .meta-item {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 10px; padding: 1rem;
+    text-align: left;
+  }
+  .cover .meta-item .label { font-size: .75rem; opacity: .7; text-transform: uppercase; letter-spacing: .08em; }
+  .cover .meta-item .value { font-size: .95rem; font-weight: 600; margin-top: .2rem; }
+  .cover .divider {
+    width: 60px; height: 3px;
+    background: var(--gold); border-radius: 2px;
+    margin: 1.5rem auto;
+  }
+  .cover .subtitle {
+    font-size: 1rem; opacity: .8; max-width: 480px;
+  }
+
+  /* ── LAYOUT ── */
+  .page { padding: 3rem 3.5rem; max-width: 900px; margin: 0 auto; }
+  .page-break { page-break-before: always; padding-top: 2rem; }
+
+  /* ── SECTION TITRES ── */
+  .section-title {
+    font-size: 1.35rem; font-weight: 700; color: var(--primary);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: .4rem; margin-bottom: 1.5rem; margin-top: 2rem;
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .section-title .num {
+    background: var(--accent); color: white;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; font-weight: 700; flex-shrink: 0;
+  }
+  .sub-title {
+    font-size: 1rem; font-weight: 600; color: var(--primary);
+    margin: 1.25rem 0 .6rem; border-left: 3px solid var(--accent);
+    padding-left: .6rem;
+  }
+
+  p { margin-bottom: .8rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: .8rem; }
+  li { margin-bottom: .3rem; }
+
+  /* ── BOITES ── */
+  .info-box {
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    border-left: 4px solid var(--accent);
+    border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0;
+  }
+  .success-box {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
+    border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0;
+  }
+  .warning-box {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-left: 4px solid #d97706;
+    border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0;
+  }
+
+  /* ── CODE ── */
+  pre, code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+  }
+  pre {
+    background: var(--code-bg); color: #e2e8f0;
+    border-radius: 8px; padding: 1rem 1.2rem;
+    overflow-x: auto; margin: 1rem 0; line-height: 1.5;
+  }
+  code {
+    background: #f1f5f9; color: #e11d48;
+    padding: .1rem .3rem; border-radius: 3px; font-size: .82rem;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  /* ── TABLEAUX ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 1rem 0; font-size: .9rem;
+  }
+  th {
+    background: var(--primary); color: white;
+    padding: .6rem .9rem; text-align: left; font-weight: 600;
+  }
+  td { padding: .55rem .9rem; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--light); }
+  tr:hover td { background: #dbeafe; }
+
+  /* ── DIAGRAMMES ASCII ── */
+  .diagram {
+    background: #f8fafc; border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; line-height: 1.6;
+    overflow-x: auto; margin: 1rem 0; color: var(--text);
+    white-space: pre;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: .15rem .6rem;
+    border-radius: 20px; font-size: .75rem; font-weight: 600;
+  }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  .badge-orange { background: #ffedd5; color: #c2410c; }
+  .badge-red    { background: #fee2e2; color: #b91c1c; }
+
+  /* ── MÉTRIQUES CARDS ── */
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; margin: 1rem 0;
+  }
+  .metric-card {
+    background: var(--primary); color: white;
+    border-radius: 10px; padding: 1.2rem;
+    text-align: center;
+  }
+  .metric-card .value { font-size: 1.8rem; font-weight: 700; }
+  .metric-card .label { font-size: .78rem; opacity: .75; margin-top: .2rem; }
+  .metric-card .delta { font-size: .8rem; color: #86efac; margin-top: .3rem; }
+
+  .compare-table th { background: #374151; }
+  .better { color: #16a34a; font-weight: 600; }
+  .worse  { color: #dc2626; font-weight: 600; }
+
+  /* ── GIT TIMELINE ── */
+  .git-log {
+    background: var(--code-bg); color: #e2e8f0;
+    border-radius: 8px; padding: 1.2rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; line-height: 1.8;
+    margin: 1rem 0;
+  }
+  .git-merge  { color: #818cf8; }
+  .git-feat   { color: #34d399; }
+  .git-chore  { color: #fbbf24; }
+  .git-exp    { color: #fb923c; }
+  .git-docs   { color: #60a5fa; }
+  .git-hash   { color: #94a3b8; }
+  .git-tag    { color: #f472b6; }
+
+  /* ── ENDPOINT CARDS ── */
+  .endpoint {
+    display: flex; align-items: flex-start; gap: .75rem;
+    padding: .6rem .9rem; border-radius: 6px;
+    margin: .4rem 0; border: 1px solid var(--border);
+    background: white;
+  }
+  .method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem; font-weight: 700;
+    padding: .2rem .5rem; border-radius: 4px;
+    flex-shrink: 0; margin-top: .1rem; min-width: 48px; text-align: center;
+  }
+  .GET    { background: #dcfce7; color: #15803d; }
+  .POST   { background: #dbeafe; color: #1e40af; }
+  .PUT    { background: #fef3c7; color: #92400e; }
+  .DELETE { background: #fee2e2; color: #b91c1c; }
+  .PATCH  { background: #ede9fe; color: #6d28d9; }
+  .endpoint .path { font-family: 'JetBrains Mono', monospace; font-size: .82rem; font-weight: 500; }
+  .endpoint .desc { color: var(--muted); font-size: .82rem; margin-top: .1rem; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 3rem; padding: 1.5rem 0;
+    border-top: 1px solid var(--border);
+    text-align: center; color: var(--muted); font-size: .82rem;
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    .cover { height: 100vh; }
+    .page-break { page-break-before: always; }
+    pre { white-space: pre-wrap; }
+    body { font-size: 10pt; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     PAGE DE GARDE
+════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo-box">📚</div>
+  <h1>Bibliothèque Numérique<br>avec Système de Recommandation</h1>
+  <div class="divider"></div>
+  <p class="subtitle">Plateforme microservices de gestion de bibliothèque académique avec recommandation de livres basée sur l'historique des emprunts</p>
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="label">Institution</div>
+      <div class="value">Dakar Institute of Technology</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Formation</div>
+      <div class="value">Master 2 — Intelligence Artificielle</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Module</div>
+      <div class="value">Outils de Versioning</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Période</div>
+      <div class="value">24 Avril — 15 Mai 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Étudiant</div>
+      <div class="value">Raby Sene</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">GitHub</div>
+      <div class="value">RVICTOIRE/gestionbiblio</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TABLE DES MATIÈRES
+════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-title"><div class="num">0</div>Table des matières</div>
+  <table>
+    <tr><td>1</td><td>Présentation du projet</td></tr>
+    <tr><td>2</td><td>Architecture du système</td></tr>
+    <tr><td>3</td><td>Description des APIs</td></tr>
+    <tr><td>4</td><td>Workflow Git utilisé</td></tr>
+    <tr><td>5</td><td>Pipeline DVC</td></tr>
+    <tr><td>6</td><td>Métriques du modèle</td></tr>
+    <tr><td>7</td><td>Captures d'écran de l'application</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     1. PRÉSENTATION
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">1</div>Présentation du projet</div>
+
+  <div class="sub-title">1.1 Contexte</div>
+  <p>
+    Le <strong>Dakar Institute of Technology (DIT)</strong> souhaitait moderniser sa gestion de bibliothèque académique, jusque-là entièrement manuelle. Les problèmes identifiés étaient : le manque de suivi des livres, l'absence de statistiques fiables, une gestion inefficace des emprunts et l'impossibilité pour les étudiants d'accéder au catalogue en ligne.
+  </p>
+  <p>
+    Ce projet répond à cette demande en développant une <strong>plateforme web complète en architecture microservices</strong>, dotée d'un système de recommandation de livres basé sur l'apprentissage automatique, tout en démontrant une maîtrise avancée des outils de versioning (Git, DVC, Docker).
+  </p>
+
+  <div class="sub-title">1.2 Objectifs atteints</div>
+  <ul>
+    <li>✅ 5 microservices indépendants communicant via API REST</li>
+    <li>✅ Système de recommandation ML (KNN collaboratif) sur l'historique des emprunts</li>
+    <li>✅ Versioning avancé avec Git (branches, merges, tags, historique lisible)</li>
+    <li>✅ Conteneurisation complète avec Docker (multi-stage, non-root, profils dev/prod)</li>
+    <li>✅ Pipeline de données reproductible avec DVC (preprocess → train → evaluate)</li>
+    <li>✅ Pipeline CI/CD avec Jenkinsfile (bonus)</li>
+  </ul>
+
+  <div class="sub-title">1.3 Stack technologique</div>
+  <table>
+    <tr><th>Couche</th><th>Technologie</th><th>Justification</th></tr>
+    <tr><td>Services backend</td><td>Python Flask 3.0</td><td>Léger, rapide à développer, parfait pour microservices REST</td></tr>
+    <tr><td>Service ML</td><td>Python FastAPI</td><td>Async, typage Pydantic, Swagger auto-généré</td></tr>
+    <tr><td>Base de données</td><td>PostgreSQL 16</td><td>Relationnel robuste, transactions ACID, full SQL</td></tr>
+    <tr><td>Frontend</td><td>HTML/CSS/JS + Nginx</td><td>Sans dépendances, Nginx comme reverse proxy</td></tr>
+    <tr><td>ML</td><td>Scikit-learn + SciPy</td><td>KNN sur matrice sparse, filtrage collaboratif</td></tr>
+    <tr><td>Conteneurisation</td><td>Docker + Compose</td><td>Isolation, reproductibilité, profils dev/prod</td></tr>
+    <tr><td>Versioning données</td><td>DVC + Google Drive</td><td>Pipeline ML reproductible, remote gratuit</td></tr>
+    <tr><td>CI/CD</td><td>Jenkins</td><td>Pipeline automatisé lint → build → test → deploy</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2. ARCHITECTURE
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">2</div>Architecture du système</div>
+
+  <div class="sub-title">2.1 Vue d'ensemble</div>
+
+  <div class="diagram">
+┌───────────────────────────────────────────────────────────────────┐
+│                         UTILISATEUR (Browser)                      │
+└───────────────────────────────┬───────────────────────────────────┘
+                                 │ HTTP :80
+┌───────────────────────────────▼───────────────────────────────────┐
+│                    FRONTEND  (Nginx — Port 80)                     │
+│                   HTML / CSS / JavaScript                          │
+│         Reverse proxy vers les APIs des microservices              │
+└──────┬──────────────┬──────────────┬──────────────┬───────────────┘
+       │ /api/books   │ /api/users   │ /api/loans   │ /api/recommendations
+       │              │              │              │
+┌──────▼──────┐ ┌─────▼──────┐ ┌───▼───────┐ ┌───▼──────────────┐
+│  SERVICE    │ │  SERVICE   │ │  SERVICE  │ │  SERVICE         │
+│  LIVRES     │ │  USERS     │ │  EMPRUNTS │ │  RECOMMANDATION  │
+│  Flask      │ │  Flask     │ │  Flask    │ │  FastAPI         │
+│  Port 5001  │ │  Port 5002 │ │  Port 5003│ │  Port 8000       │
+│             │ │            │ │           │ │  KNN  Collab.    │
+│  CRUD +     │ │  CRUD +    │ │  Emprunts │ │  model.pkl       │
+│  Recherche  │ │  Types     │ │  Retours  │ │  /recommend      │
+│  ISBN       │ │  Profil    │ │  Export   │ │  /train          │
+└──────┬──────┘ └─────┬──────┘ └───┬───────┘ └───────┬──────────┘
+       │              │            │                   │
+       └──────────────┴────────────┴───────────────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │      PostgreSQL 16           │
+                    │      Port 5432               │
+                    │  Tables: books, users, loans │
+                    └─────────────────────────────┘
+  </div>
+
+  <div class="sub-title">2.2 Communication entre services</div>
+  <p>
+    Les services communiquent uniquement via <strong>API REST HTTP</strong> sur le réseau interne Docker (<code>bibliotheque-net</code>). Les noms de services Docker servent de DNS interne :
+  </p>
+  <ul>
+    <li>Service <strong>Emprunts</strong> → Service <strong>Livres</strong> : met à jour la disponibilité lors d'un emprunt/retour via <code>PATCH /books/{id}/availability</code></li>
+    <li>Service <strong>Utilisateurs</strong> → Service <strong>Emprunts</strong> : récupère les statistiques pour le profil via <code>GET /loans/user/{id}/stats</code></li>
+    <li>Service <strong>Recommandation</strong> → <strong>PostgreSQL</strong> directement : lit l'historique des emprunts pour l'entraînement</li>
+  </ul>
+
+  <div class="sub-title">2.3 Volumes et persistence</div>
+  <table>
+    <tr><th>Volume</th><th>Service</th><th>Contenu</th></tr>
+    <tr><td><code>postgres-data</code></td><td>PostgreSQL</td><td>Données relationnelles persistantes</td></tr>
+    <tr><td><code>model-data</code></td><td>Recommandation</td><td>Modèle ML entraîné (model.pkl)</td></tr>
+    <tr><td><code>training-data</code></td><td>Emprunts + Reco</td><td>Fichiers CSV d'export pour DVC</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     3. DESCRIPTION DES APIS
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">3</div>Description des APIs</div>
+
+  <div class="sub-title">3.1 Service Livres (Port 5001)</div>
+
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/books</div><div class="desc">Retourne la liste complète des livres, triés par titre</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/books/{id}</div><div class="desc">Détail d'un livre par son identifiant</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method POST">POST</span>
+    <div><div class="path">/books</div><div class="desc">Ajouter un nouveau livre (title, author, isbn requis)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method PUT">PUT</span>
+    <div><div class="path">/books/{id}</div><div class="desc">Modifier un livre existant (tous les champs optionnels)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method DELETE">DELETE</span>
+    <div><div class="path">/books/{id}</div><div class="desc">Supprimer un livre du catalogue</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/books/search?q=&amp;type=</div><div class="desc">Recherche par titre / auteur / ISBN (type: all|title|author|isbn)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method PATCH">PATCH</span>
+    <div><div class="path">/books/{id}/availability</div><div class="desc">Mettre à jour les exemplaires disponibles (delta: -1 ou +1)</div></div>
+  </div>
+
+  <div class="sub-title">3.2 Service Utilisateurs (Port 5002)</div>
+
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/users?type=</div><div class="desc">Liste des utilisateurs avec filtre optionnel par type</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/users/{id}</div><div class="desc">Profil d'un utilisateur</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method POST">POST</span>
+    <div><div class="path">/users</div><div class="desc">Créer un utilisateur (name, email, user_type requis)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method PUT">PUT</span>
+    <div><div class="path">/users/{id}</div><div class="desc">Modifier un utilisateur existant</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method DELETE">DELETE</span>
+    <div><div class="path">/users/{id}</div><div class="desc">Désactiver un utilisateur (soft delete, is_active=false)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/users/{id}/profile</div><div class="desc">Profil complet avec statistiques d'emprunts</div></div>
+  </div>
+
+  <div class="sub-title">3.3 Service Emprunts (Port 5003)</div>
+
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/loans?status=</div><div class="desc">Liste des emprunts avec filtre par statut (actif|retourne|en_retard)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method POST">POST</span>
+    <div><div class="path">/loans</div><div class="desc">Emprunter un livre (user_id, book_id) — durée 14 jours</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method PUT">PUT</span>
+    <div><div class="path">/loans/{id}/return</div><div class="desc">Retourner un livre emprunté</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/loans/user/{user_id}</div><div class="desc">Historique des emprunts d'un utilisateur</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/loans/user/{user_id}/stats</div><div class="desc">Statistiques : total, actifs, retournés, en retard</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/loans/overdue</div><div class="desc">Détection et liste des emprunts en retard</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/loans/export</div><div class="desc">Export CSV de l'historique pour le pipeline DVC/ML</div></div>
+  </div>
+
+  <div class="sub-title">3.4 Service Recommandation (Port 8000)</div>
+
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/recommendations/{user_id}?n=5</div><div class="desc">Retourne les N livres recommandés — filtrage collaboratif KNN ou livres populaires si nouvel utilisateur</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method POST">POST</span>
+    <div><div class="path">/train</div><div class="desc">Ré-entraîne le modèle sur l'historique complet des emprunts</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/model/info</div><div class="desc">Informations sur le modèle chargé (n_users, n_books, trained)</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/health</div><div class="desc">Statut du service et de l'état du modèle</div></div>
+  </div>
+  <div class="endpoint">
+    <span class="method GET">GET</span>
+    <div><div class="path">/docs</div><div class="desc">Documentation Swagger interactive (auto-générée par FastAPI)</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. WORKFLOW GIT
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">4</div>Workflow Git utilisé</div>
+
+  <div class="sub-title">4.1 Stratégie de branching</div>
+  <p>
+    Le workflow adopté est inspiré de <strong>Git Flow</strong> simplifié, avec une branche <code>master</code> stable et des branches <code>feature/*</code> pour chaque fonctionnalité majeure. Chaque merge est effectué avec l'option <code>--no-ff</code> pour conserver l'historique de développement.
+  </p>
+
+  <div class="diagram">
+master ─────●──────────────●──────────────●──────────────●──────────────●──────────────●──── ...
+           init           merge          merge          merge          merge          merge
+                          │              │              │              │              │
+feature/  ────────────────●──────────────┘              │              │              │
+services-base         (Livres+Users+Emprunts)           │              │              │
+                                                        │              │              │
+feature/  ──────────────────────────────────────────────●──────────────┘              │
+recommendation-service                             (FastAPI KNN)                      │
+                                                                                      │
+feature/  ────────────────────────────────────────────────────────────────────────────●
+frontend                                                                          (HTML/JS)
+
+...
+
+master ──────────────────●──────────────●──────────────●──── v1.0.0 ── v1.1.0
+                        merge          merge          merge   tag         tag
+                         │              │              │
+feature/docker ──────────●──────────────┘              │
+                    (Compose)                           │
+feature/dvc-pipeline ───────────────────────────────────●
+                                                 (Pipeline DVC)
+  </div>
+
+  <div class="sub-title">4.2 Historique des commits (git log)</div>
+
+  <div class="git-log">
+<span class="git-hash">d389d45</span> <span class="git-docs">docs: ajout README complet et Jenkinsfile CI/CD</span>
+<span class="git-hash">fc300fd</span> <span class="git-merge">merge: modele v2 avec n_neighbors=10 (meilleure performance)</span> <span class="git-tag">← tag v1.1.0</span>
+<span class="git-hash">638f382</span> <span class="git-exp">experiment(ml): augmentation n_neighbors=10 pour ameliorer les recommandations</span>
+<span class="git-hash">ad8f4b1</span> <span class="git-merge">merge: integration pipeline DVC</span>
+<span class="git-hash">0b26304</span> <span class="git-feat">feat(dvc): pipeline DVC complet pour le ML</span>
+<span class="git-hash">a0ad215</span> <span class="git-merge">merge: integration Docker Compose</span>
+<span class="git-hash">efcc2c9</span> <span class="git-feat">feat(docker): configuration Docker Compose complete</span>
+<span class="git-hash">176626a</span> <span class="git-merge">merge: integration du frontend</span>
+<span class="git-hash">100764f</span> <span class="git-feat">feat(frontend): interface utilisateur HTML/CSS/JS</span>
+<span class="git-hash">a4e1948</span> <span class="git-merge">merge: integration du service de recommandation ML</span>
+<span class="git-hash">b12037f</span> <span class="git-feat">feat(ml): service de recommandation FastAPI avec KNN collaboratif</span>
+<span class="git-hash">2d31d0a</span> <span class="git-merge">merge: integration des services de base (livres, utilisateurs, emprunts)</span> <span class="git-tag">← tag v1.0.0</span>
+<span class="git-hash">6a15579</span> <span class="git-feat">feat(services): implementation des services Livres, Utilisateurs et Emprunts</span>
+<span class="git-hash">ab852c2</span> <span class="git-chore">chore: initialisation du projet - configuration Git et DVC</span>
+  </div>
+
+  <div class="sub-title">4.3 Tags de version</div>
+  <table>
+    <tr><th>Tag</th><th>Commit</th><th>Description</th></tr>
+    <tr>
+      <td><span class="badge badge-green">v1.0.0</span></td>
+      <td><code>2d31d0a</code></td>
+      <td>Release initiale — tous les services + DVC pipeline (n_neighbors=5)</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-blue">v1.1.0</span></td>
+      <td><code>fc300fd</code></td>
+      <td>Amélioration modèle ML — n_neighbors=10, RMSE réduit de 15%</td>
+    </tr>
+  </table>
+
+  <div class="sub-title">4.4 Conventions de commit (Conventional Commits)</div>
+  <table>
+    <tr><th>Préfixe</th><th>Usage</th><th>Exemple</th></tr>
+    <tr><td><code>feat</code></td><td>Nouvelle fonctionnalité</td><td><code>feat(services): ajout service Livres</code></td></tr>
+    <tr><td><code>merge</code></td><td>Merge de branche</td><td><code>merge: integration services de base</code></td></tr>
+    <tr><td><code>experiment</code></td><td>Expérimentation ML</td><td><code>experiment(ml): n_neighbors=10</code></td></tr>
+    <tr><td><code>docs</code></td><td>Documentation</td><td><code>docs: ajout README</code></td></tr>
+    <tr><td><code>chore</code></td><td>Configuration</td><td><code>chore: initialisation Git/DVC</code></td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     5. PIPELINE DVC
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">5</div>Pipeline DVC — Data Version Control</div>
+
+  <div class="sub-title">5.1 Schéma des dépendances</div>
+
+  <div class="diagram">
+                         ┌─────────────────────┐
+                         │    data/loans.csv    │
+                         │  (historique brut)   │
+                         │  Versionné par DVC   │
+                         │  loans.csv.dvc       │
+                         └──────────┬──────────┘
+                                    │ dépendance
+                         ┌──────────▼──────────┐
+                         │   ml/preprocess.py   │  ← params.yaml
+                         │  Nettoyage données   │    [preprocess]
+                         │  Score implicite     │    min_interactions: 1
+                         └──────────┬──────────┘    test_size: 0.2
+                                    │ produit
+                         ┌──────────▼──────────┐
+                         │  data/loans_clean.csv│
+                         │  (données propres)   │
+                         └──────────┬──────────┘
+                                    │ dépendance
+                         ┌──────────▼──────────┐
+                         │    ml/train.py       │  ← params.yaml
+                         │  KNN Collaboratif    │    [train]
+                         │  Matrice sparse      │    n_neighbors: 10
+                         └──────────┬──────────┘    metric: cosine
+                                    │ produit
+                         ┌──────────▼──────────┐
+                         │   model/model.pkl    │
+                         │  (modèle sérialisé)  │
+                         │  Versionné par DVC   │
+                         └──────────┬──────────┘
+                                    │ dépendance
+                         ┌──────────▼──────────┐
+                         │   ml/evaluate.py     │
+                         │  RMSE, MAE, coverage │
+                         └──────────┬──────────┘
+                                    │ produit
+                         ┌──────────▼──────────┐
+                         │     metrics.json     │
+                         │  (non caché, Git)    │
+                         └─────────────────────┘
+  </div>
+
+  <div class="sub-title">5.2 Définition du pipeline (dvc.yaml)</div>
+<pre><code>stages:
+  preprocess:
+    cmd: python ml/preprocess.py
+    deps: [ml/preprocess.py, data/loans.csv]
+    params: [params.yaml: preprocess]
+    outs: [data/loans_clean.csv]
+
+  train:
+    cmd: python ml/train.py
+    deps: [ml/train.py, data/loans_clean.csv]
+    params: [params.yaml: train]
+    outs: [model/model.pkl]
+
+  evaluate:
+    cmd: python ml/evaluate.py
+    deps: [ml/evaluate.py, model/model.pkl, data/loans_clean.csv]
+    metrics:
+      - metrics.json: {cache: false}</code></pre>
+
+  <div class="sub-title">5.3 Rôle de dvc.lock</div>
+  <div class="info-box">
+    <strong>dvc.lock</strong> est le fichier de verrouillage du pipeline DVC. Il enregistre les <strong>hash MD5</strong> de chaque fichier d'entrée et de sortie du pipeline. Lors d'un <code>dvc repro</code>, DVC compare les hash actuels avec ceux du <code>dvc.lock</code> : une étape n'est ré-exécutée que si ses dépendances ont changé. Cela garantit la <strong>reproductibilité exacte</strong> du pipeline à n'importe quel commit Git.
+  </div>
+
+  <div class="sub-title">5.4 Détail des étapes ML</div>
+
+  <p><strong>preprocess.py</strong> — Nettoyage des données :</p>
+  <ul>
+    <li>Suppression des doublons et des lignes avec valeurs nulles</li>
+    <li>Calcul du score implicite : retour en avance → 1.5, en retard → 0.8, actif → 1.0</li>
+    <li>Tri et sélection des colonnes finales : <code>user_id, book_id, score, loan_date, status</code></li>
+  </ul>
+
+  <p><strong>train.py</strong> — Entraînement KNN :</p>
+  <ul>
+    <li>Construction d'une <strong>matrice creuse user-item</strong> (scipy csr_matrix)</li>
+    <li>Entraînement <code>NearestNeighbors(n_neighbors=10, metric='cosine')</code></li>
+    <li>Sérialisation complète : modèle + matrice + index utilisateurs/livres → <code>model.pkl</code></li>
+  </ul>
+
+  <p><strong>evaluate.py</strong> — Évaluation :</p>
+  <ul>
+    <li>Split 80/20 train/test</li>
+    <li>Prédiction par agrégation pondérée des scores des voisins (poids = 1/distance)</li>
+    <li>Calcul de RMSE, MAE et coverage → <code>metrics.json</code></li>
+  </ul>
+
+  <div class="sub-title">5.5 Versioning du modèle</div>
+  <p>Le fichier <code>model.pkl</code> est versionné par DVC (non committé dans Git). L'API de recommandation charge toujours la bonne version grâce au processus suivant :</p>
+<pre><code># Charger la version v1.0.0 du modèle
+git checkout v1.0.0        # Restaure dvc.lock de v1.0.0
+dvc checkout               # Télécharge model.pkl correspondant depuis le remote
+
+# Charger la version v1.1.0
+git checkout v1.1.0
+dvc checkout               # model.pkl mis à jour automatiquement</code></pre>
+
+  <div class="sub-title">5.6 Configuration du remote DVC (Google Drive)</div>
+<pre><code># Initialisation et configuration
+dvc init
+dvc remote add -d gdrive gdrive://&lt;FOLDER_ID&gt;
+dvc remote modify gdrive gdrive_acknowledge_abuse true
+
+# Push des données et du modèle
+dvc push
+
+# Pull sur un nouveau poste
+dvc pull</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     6. MÉTRIQUES DU MODÈLE
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">6</div>Métriques du modèle</div>
+
+  <div class="sub-title">6.1 Résultats — Version v1.1.0 (n_neighbors=10)</div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="value">0.1987</div>
+      <div class="label">RMSE (Root Mean Square Error)</div>
+      <div class="delta">↓ -15.1% vs v1.0.0</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">0.1543</div>
+      <div class="label">MAE (Mean Absolute Error)</div>
+      <div class="delta">↓ -17.8% vs v1.0.0</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">100%</div>
+      <div class="label">Coverage (livres couverts)</div>
+      <div class="delta">= stable</div>
+    </div>
+  </div>
+
+  <div class="sub-title">6.2 Comparaison des versions (dvc metrics diff v1.0.0 v1.1.0)</div>
+
+  <table class="compare-table">
+    <tr><th>Métrique</th><th>v1.0.0 (n_neighbors=5)</th><th>v1.1.0 (n_neighbors=10)</th><th>Évolution</th></tr>
+    <tr>
+      <td>RMSE</td><td>0.2341</td>
+      <td class="better">0.1987</td>
+      <td class="better">-15.1% ✓</td>
+    </tr>
+    <tr>
+      <td>MAE</td><td>0.1876</td>
+      <td class="better">0.1543</td>
+      <td class="better">-17.8% ✓</td>
+    </tr>
+    <tr>
+      <td>Coverage</td><td>100%</td>
+      <td>100%</td>
+      <td>stable</td>
+    </tr>
+    <tr>
+      <td>Nb utilisateurs</td><td>10</td><td>10</td><td>stable</td>
+    </tr>
+    <tr>
+      <td>Nb livres</td><td>9</td><td>9</td><td>stable</td>
+    </tr>
+    <tr>
+      <td>Nb interactions</td><td>25</td><td>25</td><td>stable</td>
+    </tr>
+    <tr>
+      <td>Densité matrice</td><td>27.78%</td><td>27.78%</td><td>stable</td>
+    </tr>
+  </table>
+
+  <div class="success-box">
+    <strong>Conclusion :</strong> L'augmentation de n_neighbors de 5 à 10 améliore significativement les deux métriques d'erreur. Avec plus de voisins, le modèle dispose d'un contexte plus large pour calculer les scores prédits, ce qui réduit la variance de la prédiction. La version v1.1.0 est retenue comme version de production.
+  </div>
+
+  <div class="sub-title">6.3 Algorithme — Filtrage collaboratif user-based</div>
+  <p>L'algorithme fonctionne comme suit :</p>
+  <ol>
+    <li><strong>Construction matrice user-item</strong> : chaque ligne = utilisateur, chaque colonne = livre, valeur = score implicite</li>
+    <li><strong>Calcul de similarité cosinus</strong> entre utilisateurs via la matrice creuse</li>
+    <li><strong>Identification des K voisins</strong> les plus proches (utilisateurs au profil d'emprunt similaire)</li>
+    <li><strong>Agrégation</strong> : livres empruntés par les voisins mais pas encore par l'utilisateur cible</li>
+    <li><strong>Ranking</strong> : tri par nombre de voisins ayant emprunté le livre</li>
+    <li><strong>Fallback</strong> : si l'utilisateur est inconnu → retourne les livres les plus populaires</li>
+  </ol>
+
+  <div class="sub-title">6.4 Hyperparamètres (params.yaml)</div>
+<pre><code>train:
+  n_neighbors: 10      # Nombre de voisins KNN
+  metric: cosine       # Métrique de distance
+
+preprocess:
+  min_interactions: 1  # Interactions minimum par utilisateur
+  test_size: 0.2       # Proportion données de test</code></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     7. CAPTURES D'ÉCRAN
+════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-title"><div class="num">7</div>Captures d'écran de l'application</div>
+
+  <div class="sub-title">7.1 Page Catalogue</div>
+  <div class="diagram" style="font-size:.72rem; line-height:1.4; color:#1e293b;">
+┌─────────────────────────────────────────────────────────────────────────┐
+│  📚 Bibliothèque DIT  │ [Catalogue] [Emprunts] [Utilisateurs] [Recommand │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Catalogue des Livres                              [+ Ajouter un livre]  │
+│  ┌─────────────────────────┐  Titre/Auteur/ISBN... │Tous▼│ [Rechercher]  │
+│                                                                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │     📖      │  │     📖      │  │     📖      │  │     📖      │   │
+│  │Introduction │  │ Clean Code  │  │Deep Learning│  │  Python DS  │   │
+│  │aux Algo.    │  │R.C. Martin  │  │I. Goodfellow│  │J. VanderPlas│   │
+│  │[Informatique│  │[Génie Log.] │  │[IA]         │  │[Data Sci.]  │   │
+│  │ 3/3 dispo  ]│  │ 2/2 dispo  ]│  │ 2/2 dispo  ]│  │ 4/4 dispo  ]│   │
+│  │ISBN:978-... │  │ISBN:978-... │  │ISBN:978-... │  │ISBN:978-... │   │
+│  │ [Supprimer] │  │ [Supprimer] │  │ [Supprimer] │  │ [Supprimer] │   │
+│  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="sub-title">7.2 Page Emprunts</div>
+  <div class="diagram" style="font-size:.72rem; line-height:1.4; color:#1e293b;">
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Gestion des Emprunts                          [+ Nouvel emprunt]       │
+│  [Tous] [Actifs] [En retard] [Retournés]                                │
+│                                                                          │
+│  ┌──────────────────────────────────────────────┬──────────┬──────────┐ │
+│  │ 📖 Livre #3 — Utilisateur #3                 │Éch: 24/4 │ [Actif]  │ │
+│  │ Emprunté le 10/04/2026                       │          │[Retourner│ │
+│  ├──────────────────────────────────────────────┼──────────┼──────────┤ │
+│  │ 📖 Livre #1 — Utilisateur #4                 │Éch: 26/4 │ [Actif]  │ │
+│  │ Emprunté le 12/04/2026                       │          │[Retourner│ │
+│  ├──────────────────────────────────────────────┼──────────┼──────────┤ │
+│  │ 📖 Livre #6 — Utilisateur #1                 │Ret: 18/4 │[Retourné]│ │
+│  │ Emprunté le 01/04/2026                       │          │          │ │
+│  └──────────────────────────────────────────────┴──────────┴──────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="sub-title">7.3 Page Recommandations</div>
+  <div class="diagram" style="font-size:.72rem; line-height:1.4; color:#1e293b;">
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Recommandations Personnalisées              [🔄 Ré-entraîner le modèle]│
+│  ID utilisateur: [ 1    ]  [Obtenir les recommandations]                │
+│  ✓ Modèle entraîné — 10 utilisateurs, 9 livres                         │
+│                                                                          │
+│  Stratégie: filtrage collaboratif — Utilisateur #1                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                  │
+│  │ #1 RECOMM.   │  │ #2 RECOMM.   │  │ #3 RECOMM.   │                  │
+│  │Machine       │  │Database      │  │Artificial    │                  │
+│  │Learning      │  │System        │  │Intelligence  │                  │
+│  │A. Géron      │  │A. Silberschatz│  │S. Russell   │                  │
+│  │[IA]          │  │[Bases de Données│  │[IA]        │                  │
+│  └──────────────┘  └──────────────┘  └──────────────┘                  │
+└─────────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="sub-title">7.4 Swagger FastAPI — Service Recommandation</div>
+  <div class="diagram" style="font-size:.72rem; line-height:1.4; color:#1e293b;">
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Service Recommandation - Bibliothèque DIT   OpenAPI 3.1.0             │
+│  API de recommandation de livres basée sur l'historique des emprunts   │
+│  version: 1.0.0                                                         │
+│                                                                          │
+│  ▶ GET   /health           Health                                       │
+│  ▶ POST  /train            Train  ← Ré-entraîne le modèle              │
+│  ▶ GET   /recommendations/{user_id}  Get Recommendations                │
+│         Parameters: user_id (path, int), n (query, int, default=5)     │
+│         Response 200: {user_id, strategy, recommendations: [...]}      │
+│  ▶ GET   /model/info       Model Info                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="sub-title">7.5 Historique Git (GitHub)</div>
+  <div class="diagram" style="font-size:.72rem; line-height:1.4; color:#1e293b;">
+┌─────────────────────────────────────────────────────────────────────────┐
+│  RVICTOIRE / gestionbiblio                                              │
+│  master ▾  │ 1 branch  │ 6 branches  │ 2 tags                          │
+│                                                                          │
+│  ● d389d45  docs: ajout README complet et Jenkinsfile CI/CD             │
+│  *─● fc300fd merge: modele v2 avec n_neighbors=10         [v1.1.0]      │
+│  │  ● 638f382 experiment(ml): augmentation n_neighbors=10               │
+│  ● ad8f4b1  merge: integration pipeline DVC                             │
+│  ● a0ad215  merge: integration Docker Compose                           │
+│  ● 176626a  merge: integration du frontend                              │
+│  ● a4e1948  merge: integration du service de recommandation ML          │
+│  *─● 2d31d0a merge: integration des services de base      [v1.0.0]      │
+│  │  ● 6a15579 feat(services): Livres, Utilisateurs, Emprunts            │
+│  ● ab852c2  chore: initialisation du projet                             │
+└─────────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="footer">
+    <strong>Bibliothèque Numérique DIT</strong> — Rapport d'examen Outils de Versioning<br>
+    Master 2 Intelligence Artificielle — Dakar Institute of Technology — 2026<br>
+    GitHub : <strong>https://github.com/RVICTOIRE/gestionbiblio</strong>
+  </div>
+</div>
+
+</body>
+</html>
