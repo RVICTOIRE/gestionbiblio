@@ -1,0 +1,6 @@
+# DVC ignore
+.git
+.env
+__pycache__
+*.pyc
+*.pyo
