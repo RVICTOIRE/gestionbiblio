@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bibliothèque Numérique - DIT</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <span class="logo-icon">📚</span>
+        <span>Bibliothèque DIT</span>
+      </div>
+      <nav>
+        <button class="nav-btn active" onclick="showSection('catalogue')">Catalogue</button>
+        <button class="nav-btn" onclick="showSection('emprunts')">Emprunts</button>
+        <button class="nav-btn" onclick="showSection('utilisateurs')">Utilisateurs</button>
+        <button class="nav-btn" onclick="showSection('recommandations')">Recommandations</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- SECTION CATALOGUE -->
+    <section id="catalogue" class="section active">
+      <div class="section-header">
+        <h2>Catalogue des Livres</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-add-book')">+ Ajouter un livre</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Rechercher par titre, auteur ou ISBN..." />
+        <select id="search-type">
+          <option value="all">Tous</option>
+          <option value="title">Titre</option>
+          <option value="author">Auteur</option>
+          <option value="isbn">ISBN</option>
+        </select>
+        <button class="btn btn-secondary" onclick="searchBooks()">Rechercher</button>
+        <button class="btn btn-outline" onclick="loadBooks()">Réinitialiser</button>
+      </div>
+      <div id="books-grid" class="books-grid"></div>
+    </section>
+
+    <!-- SECTION EMPRUNTS -->
+    <section id="emprunts" class="section">
+      <div class="section-header">
+        <h2>Gestion des Emprunts</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-new-loan')">+ Nouvel emprunt</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterLoans('all', this)">Tous</button>
+        <button class="filter-btn" onclick="filterLoans('actif', this)">Actifs</button>
+        <button class="filter-btn" onclick="filterLoans('en_retard', this)">En retard</button>
+        <button class="filter-btn" onclick="filterLoans('retourne', this)">Retournés</button>
+      </div>
+      <div id="loans-list" class="loans-list"></div>
+    </section>
+
+    <!-- SECTION UTILISATEURS -->
+    <section id="utilisateurs" class="section">
+      <div class="section-header">
+        <h2>Gestion des Utilisateurs</h2>
+        <button class="btn btn-primary" onclick="openModal('modal-add-user')">+ Ajouter un utilisateur</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterUsers('all', this)">Tous</button>
+        <button class="filter-btn" onclick="filterUsers('etudiant', this)">Étudiants</button>
+        <button class="filter-btn" onclick="filterUsers('professeur', this)">Professeurs</button>
+        <button class="filter-btn" onclick="filterUsers('personnel', this)">Personnel</button>
+      </div>
+      <div id="users-grid" class="users-grid"></div>
+    </section>
+
+    <!-- SECTION RECOMMANDATIONS -->
+    <section id="recommandations" class="section">
+      <div class="section-header">
+        <h2>Recommandations Personnalisées</h2>
+        <button class="btn btn-warning" onclick="retrainModel()">🔄 Ré-entraîner le modèle</button>
+      </div>
+      <div class="reco-search">
+        <input type="number" id="reco-user-id" placeholder="ID de l'utilisateur" min="1" />
+        <button class="btn btn-primary" onclick="getRecommendations()">Obtenir les recommandations</button>
+      </div>
+      <div id="model-status" class="model-status"></div>
+      <div id="reco-results" class="reco-results"></div>
+    </section>
+  </main>
+
+  <!-- MODAL Ajouter livre -->
+  <div id="modal-add-book" class="modal">
+    <div class="modal-content">
+      <h3>Ajouter un livre</h3>
+      <form id="form-add-book">
+        <div class="form-group">
+          <label>Titre *</label>
+          <input type="text" name="title" required />
+        </div>
+        <div class="form-group">
+          <label>Auteur *</label>
+          <input type="text" name="author" required />
+        </div>
+        <div class="form-group">
+          <label>ISBN *</label>
+          <input type="text" name="isbn" required />
+        </div>
+        <div class="form-group">
+          <label>Genre</label>
+          <input type="text" name="genre" />
+        </div>
+        <div class="form-group">
+          <label>Année de publication</label>
+          <input type="number" name="published_year" min="1800" max="2030" />
+        </div>
+        <div class="form-group">
+          <label>Nombre d'exemplaires</label>
+          <input type="number" name="total_copies" min="1" value="1" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" rows="3"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Ajouter</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-book')">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL Nouvel emprunt -->
+  <div id="modal-new-loan" class="modal">
+    <div class="modal-content">
+      <h3>Nouvel emprunt</h3>
+      <form id="form-new-loan">
+        <div class="form-group">
+          <label>Utilisateur *</label>
+          <select name="user_id" id="loan-user-select" required></select>
+        </div>
+        <div class="form-group">
+          <label>Livre *</label>
+          <select name="book_id" id="loan-book-select" required></select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Emprunter</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-loan')">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL Ajouter utilisateur -->
+  <div id="modal-add-user" class="modal">
+    <div class="modal-content">
+      <h3>Ajouter un utilisateur</h3>
+      <form id="form-add-user">
+        <div class="form-group">
+          <label>Nom complet *</label>
+          <input type="text" name="name" required />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select name="user_type" required>
+            <option value="etudiant">Étudiant</option>
+            <option value="professeur">Professeur</option>
+            <option value="personnel">Personnel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Numéro étudiant</label>
+          <input type="text" name="student_id" />
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" name="phone" />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Ajouter</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-add-user')">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
