@@ -1,0 +1,55 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python ml/preprocess.py
+    deps:
+    - path: ml/preprocess.py
+      md5: b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6
+      size: 2341
+    - path: data/loans.csv
+      md5: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+      size: 1243
+    params:
+      params.yaml:
+        preprocess:
+          min_interactions: 1
+          test_size: 0.2
+    outs:
+    - path: data/loans_clean.csv
+      md5: c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+      size: 1189
+
+  train:
+    cmd: python ml/train.py
+    deps:
+    - path: ml/train.py
+      md5: d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8
+      size: 3102
+    - path: data/loans_clean.csv
+      md5: c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+      size: 1189
+    params:
+      params.yaml:
+        train:
+          n_neighbors: 5
+          metric: cosine
+    outs:
+    - path: model/model.pkl
+      md5: e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9
+      size: 48234
+
+  evaluate:
+    cmd: python ml/evaluate.py
+    deps:
+    - path: ml/evaluate.py
+      md5: f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0
+      size: 4512
+    - path: model/model.pkl
+      md5: e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9
+      size: 48234
+    - path: data/loans_clean.csv
+      md5: c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7
+      size: 1189
+    metrics:
+    - path: metrics.json
+      cache: false
