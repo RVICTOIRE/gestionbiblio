@@ -35,7 +35,7 @@ pipeline {
                     steps {
                         sh '''
                             pip install dvc --quiet
-                            dvc check-ignore -v . || true
+                            dvc version
                         '''
                     }
                 }
@@ -54,15 +54,27 @@ pipeline {
                 echo 'Lancement des tests d integration...'
                 sh '''
                     docker compose --profile dev up -d db
-                    sleep 10
+                    echo "Attente de la base de donnees..."
+                    for i in $(seq 1 12); do
+                        docker compose exec -T db pg_isready -U postgres -d bibliotheque && break
+                        sleep 5
+                    done
+
                     docker compose --profile dev up -d livres utilisateurs emprunts recommandation
 
-                    # Test de sante des services
-                    sleep 15
-                    curl -f http://localhost:5001/health || exit 1
-                    curl -f http://localhost:5002/health || exit 1
-                    curl -f http://localhost:5003/health || exit 1
-                    curl -f http://localhost:8000/health || exit 1
+                    # Test de sante des services avec retry (60s max par service)
+                    for SERVICE_URL in \
+                        http://localhost:5001/health \
+                        http://localhost:5002/health \
+                        http://localhost:5003/health \
+                        http://localhost:8000/health; do
+                        echo "Attente de $SERVICE_URL..."
+                        for i in $(seq 1 12); do
+                            curl -sf $SERVICE_URL && break
+                            [ $i -eq 12 ] && echo "TIMEOUT: $SERVICE_URL" && exit 1
+                            sleep 5
+                        done
+                    done
 
                     echo "Tous les services sont operationnels"
                 '''
@@ -89,6 +101,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'gdrive-token', variable: 'GDRIVE_TOKEN')]) {
                     sh '''
                         pip install dvc dvc-gdrive scikit-learn scipy pandas numpy --quiet
+                        export GDRIVE_CREDENTIALS_DATA="$GDRIVE_TOKEN"
                         dvc pull || true
                         dvc repro
                         dvc metrics show
@@ -116,16 +129,15 @@ pipeline {
                 )]) {
                     sh '''
                         echo $REGISTRY_PASS | docker login $DOCKER_REGISTRY -u $REGISTRY_USER --password-stdin
-                        docker tag bibliotheque-livres $DOCKER_REGISTRY/bibliotheque/livres:$IMAGE_TAG
-                        docker tag bibliotheque-utilisateurs $DOCKER_REGISTRY/bibliotheque/utilisateurs:$IMAGE_TAG
-                        docker tag bibliotheque-emprunts $DOCKER_REGISTRY/bibliotheque/emprunts:$IMAGE_TAG
-                        docker tag bibliotheque-recommandation $DOCKER_REGISTRY/bibliotheque/recommandation:$IMAGE_TAG
-                        docker tag bibliotheque-frontend $DOCKER_REGISTRY/bibliotheque/frontend:$IMAGE_TAG
-                        docker push $DOCKER_REGISTRY/bibliotheque/livres:$IMAGE_TAG
-                        docker push $DOCKER_REGISTRY/bibliotheque/utilisateurs:$IMAGE_TAG
-                        docker push $DOCKER_REGISTRY/bibliotheque/emprunts:$IMAGE_TAG
-                        docker push $DOCKER_REGISTRY/bibliotheque/recommandation:$IMAGE_TAG
-                        docker push $DOCKER_REGISTRY/bibliotheque/frontend:$IMAGE_TAG
+
+                        for SERVICE in livres utilisateurs emprunts recommandation frontend; do
+                            docker tag bibliotheque-${SERVICE} $DOCKER_REGISTRY/bibliotheque/${SERVICE}:$IMAGE_TAG
+                            docker tag bibliotheque-${SERVICE} $DOCKER_REGISTRY/bibliotheque/${SERVICE}:latest
+                            docker push $DOCKER_REGISTRY/bibliotheque/${SERVICE}:$IMAGE_TAG
+                            docker push $DOCKER_REGISTRY/bibliotheque/${SERVICE}:latest
+                        done
+
+                        docker logout $DOCKER_REGISTRY
                     '''
                 }
             }
@@ -152,6 +164,7 @@ pipeline {
             sh 'docker compose down -v || true'
         }
         always {
+            sh 'docker system prune -f || true'
             cleanWs()
         }
     }
