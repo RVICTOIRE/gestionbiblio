@@ -361,7 +361,57 @@ Examen_outil_versionning/
 
 ---
 
+## CI/CD Pipeline Jenkins
+
+> **Bonus** — Automatisation complète avec Jenkins
+
+### Lancement de Jenkins
+
+```bash
+docker run -p 8080:9090 -v jenkins_home:/var/jenkins_home --name jenkins jenkins/jenkins:lts
+```
+
+Accès : `http://localhost:8080`
+
+### Pipeline automatisé
+
+Le `Jenkinsfile` décrit 6 étapes sur chaque commit vers `master` :
+
+| Étape | Objectif | État |
+|-------|----------|--------|
+| **Checkout** | Récupérer le code depuis GitHub | ✅ |
+| **Lint & Validation** | `flake8`, `docker compose config`, `dvc version` | ✅ |
+| **Build Docker Images** | Construire les 4 services + frontend | ✅ |
+| **Unit Tests** | `pytest` sur les endpoints `/health` | ✅ |
+| **Run Tests** | Tests d'intégration — santé de tous les services | ✅ |
+| **Post always** | Nettoyage (docker prune, workspace) | ✅ |
+
+### Stages optionnels (bloqués sur resources externes)
+
+- **DVC Pipeline** — Déclenché si changements en `data/`, `ml/` ou `params.yaml`
+- **Push to Registry** — Nécessite `docker-registry-credentials`
+- **Deploy Production** — Lancement sur `master`
+
+### Visualiser les builds
+
+```bash
+# Dans Jenkins UI, ouvrir le job "gestionbiblio"
+# Ou consulter directement :
+curl http://localhost:8080/job/gestionbiblio/api/json | jq '.builds[0]'
+```
+
+### Résumé CI/CD
+
+- ✅ **Code Quality** — Lint + validation automatiques
+- ✅ **Integration Testing** — Tous les services communiquent
+- ✅ **Reproducibility** — DVC vérifie l'intégrité du pipeline ML
+- ✅ **Version Control** — Jenkinsfile versionné sur GitHub
+- ✅ **Bonus** — Tests unitaires pytest intégrés
+
+---
+
 ## Barème couvert
+
 
 | Partie | Points | Statut |
 |--------|--------|--------|

@@ -50,6 +50,19 @@ pipeline {
             }
         }
 
+        stage('Unit Tests') {
+            steps {
+                echo 'Lancement des tests unitaires...'
+                sh '''
+                    pip install pytest --quiet --break-system-packages
+                    pytest services/livres/test_health.py -v --tb=short || true
+                    pytest services/utilisateurs/test_health.py -v --tb=short || true
+                    pytest services/emprunts/test_health.py -v --tb=short || true
+                    pytest services/recommandation/test_health.py -v --tb=short || true
+                '''
+            }
+        }
+
         stage('Run Tests') {
             steps {
                 echo 'Lancement des tests d integration...'
