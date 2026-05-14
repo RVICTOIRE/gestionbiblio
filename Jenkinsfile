@@ -5,6 +5,7 @@ pipeline {
         COMPOSE_PROJECT_NAME = 'bibliotheque'
         DOCKER_REGISTRY       = 'registry.dit.sn'
         IMAGE_TAG             = "${env.BUILD_NUMBER}"
+        PATH                  = "/var/jenkins_home/.local/bin:${env.PATH}"
     }
 
     stages {
@@ -52,7 +53,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Lancement des tests d integration...'
-                sh '''
+                sh '''                    # Liberer le port 5432 si deja utilise
+                    docker ps --filter "publish=5432" -q | xargs -r docker stop || true
                     docker compose --profile dev up -d db
                     echo "Attente de la base de donnees..."
                     for i in $(seq 1 12); do
@@ -64,10 +66,10 @@ pipeline {
 
                     # Test de sante des services avec retry (60s max par service)
                     for SERVICE_URL in \
-                        http://localhost:5001/health \
-                        http://localhost:5002/health \
-                        http://localhost:5003/health \
-                        http://localhost:8000/health; do
+                        http://host.docker.internal:5001/health \
+                        http://host.docker.internal:5002/health \
+                        http://host.docker.internal:5003/health \
+                        http://host.docker.internal:8000/health; do
                         echo "Attente de $SERVICE_URL..."
                         for i in $(seq 1 12); do
                             curl -sf $SERVICE_URL && break
