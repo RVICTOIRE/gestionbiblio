@@ -21,7 +21,7 @@ pipeline {
                 stage('Python Lint') {
                     steps {
                         sh '''
-                            pip install flake8 --quiet
+                            pip install flake8 --quiet --break-system-packages
                             flake8 services/ ml/ --max-line-length=120 --ignore=E501,W503 || true
                         '''
                     }
@@ -34,7 +34,7 @@ pipeline {
                 stage('DVC Validate') {
                     steps {
                         sh '''
-                            pip install dvc --quiet
+                            pip install dvc --quiet --break-system-packages
                             dvc version
                         '''
                     }
@@ -100,7 +100,7 @@ pipeline {
                 echo 'Execution du pipeline DVC...'
                 withCredentials([string(credentialsId: 'gdrive-token', variable: 'GDRIVE_TOKEN')]) {
                     sh '''
-                        pip install dvc dvc-gdrive scikit-learn scipy pandas numpy --quiet
+                        pip install dvc dvc-gdrive scikit-learn scipy pandas numpy --quiet --break-system-packages
                         export GDRIVE_CREDENTIALS_DATA="$GDRIVE_TOKEN"
                         dvc pull || true
                         dvc repro
